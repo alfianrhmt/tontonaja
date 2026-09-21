@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../data/movies.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/section_header.dart';
@@ -31,7 +32,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data film dari data/movies.dart
+    // Ambil data film dari movies.dart
     final featuredMovie = movies[0];
     final popularMovies = movies.sublist(1, 7);
     final recommendedMovies = movies.sublist(7, 14);
@@ -69,7 +70,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== FILM UNGGULAN =====
+            // FILM UNGGULAN
             GestureDetector(
               onTap: () => bukaDetail(context, featuredMovie),
               child: Container(
@@ -99,10 +100,7 @@ class HomeScreen extends StatelessWidget {
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black87,
-                              ],
+                              colors: [Colors.transparent, Colors.black87],
                             ),
                           ),
                         ),
@@ -198,7 +196,7 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ===== PILIHAN GENRE =====
+            // GENRE
             SizedBox(
               height: 36,
               child: ListView(
@@ -230,7 +228,7 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ===== FILM POPULAR =====
+            // FILM POPULAR
             SectionHeader(
               title: 'Film Popular',
               onSeeAll: () => bukaDaftar(context, 'Semua'),
@@ -249,7 +247,7 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ===== REKOMENDASI =====
+            // REKOMENDASI
             SectionHeader(
               title: 'Rekomendasi',
               onSeeAll: () => bukaDaftar(context, 'Semua'),
