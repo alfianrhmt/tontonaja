@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/movies.dart';
 
-// Halaman daftar film berdasarkan kategori/genre.
-// Dibuka dari genre chips atau tombol "Lihat Semua" di Home.
+
 class MovieListScreen extends StatelessWidget {
   final String category;
 
@@ -11,7 +10,7 @@ class MovieListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Filter film berdasarkan kategori. Jika "Semua", tampilkan semua film.
+
     final filteredMovies = category == 'Semua'
         ? movies
         : movies.where((m) => m['genre'] == category).toList();
@@ -46,7 +45,7 @@ class MovieListScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Chip filter genre di bagian atas
+
           SizedBox(
             height: 48,
             child: ListView(
@@ -89,7 +88,7 @@ class MovieListScreen extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // Grid 2 kolom film
+
           Expanded(
             child: filteredMovies.isEmpty
                 ? _EmptyState(category: category)
@@ -113,7 +112,7 @@ class MovieListScreen extends StatelessWidget {
   }
 }
 
-// Kartu film untuk tampilan grid
+
 class _MovieGridCard extends StatelessWidget {
   final Map<String, dynamic> movie;
 
@@ -124,7 +123,7 @@ class _MovieGridCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Poster + badge rating
+
         Expanded(
           child: Stack(
             children: [
@@ -173,7 +172,7 @@ class _MovieGridCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        // Judul film
+
         Text(
           movie['title'],
           style: GoogleFonts.poppins(
@@ -184,7 +183,7 @@ class _MovieGridCard extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        // Tahun dan genre
+
         Text(
           '${movie['year']} • ${movie['genre']}',
           style: GoogleFonts.poppins(color: Colors.white54, fontSize: 11),
@@ -194,7 +193,7 @@ class _MovieGridCard extends StatelessWidget {
   }
 }
 
-// Tampilan saat tidak ada film dalam kategori tertentu
+
 class _EmptyState extends StatelessWidget {
   final String category;
 
