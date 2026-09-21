@@ -1,10 +1,11 @@
 ﻿import 'package:flutter/material.dart';
+
 import 'home_screen.dart';
 import 'downloads_screen.dart';
 import 'favourites_screen.dart';
 import 'profile_screen.dart';
 
-// MainScreen pakai StatefulWidget karena perlu nyimpen tab yang lagi aktif
+// MainScreen pakai StatefulWidget karena perlu menyimpan tab yang aktif
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 

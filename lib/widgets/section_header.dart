@@ -1,13 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Widget sederhana untuk judul setiap section di Home.
-// Menampilkan judul di kiri dan tombol "Lihat Semua" di kanan.
+// Judul section masih buat di home saja
 class SectionHeader extends StatelessWidget {
   final String title;
-  final VoidCallback? onSeeAll;
+  final VoidCallback onSeeAll;
 
-  const SectionHeader({super.key, required this.title, this.onSeeAll});
+  const SectionHeader({super.key, required this.title, required this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -24,21 +23,19 @@ class SectionHeader extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          if (onSeeAll != null)
-            TextButton(
-              onPressed: onSeeAll,
-              child: Text(
-                'Lihat Semua',
-                style: GoogleFonts.poppins(
-                  color: const Color(0xFFD8F602),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+          TextButton(
+            onPressed: onSeeAll,
+            child: Text(
+              'Lihat Semua',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFFD8F602),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
+          ),
         ],
       ),
     );
   }
 }
-

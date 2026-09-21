@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Widget kartu film sederhana — hanya untuk tampilan, tidak bisa diklik ke detail.
-// Digunakan di section Popular dan Rekomendasi pada halaman Home.
+// Kartu film kecil, dipakai di section Popular dan Rekomendasi
 class MovieCard extends StatelessWidget {
   final Map<String, dynamic> movie;
 
@@ -17,76 +16,37 @@ class MovieCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Poster film
-          Container(
-            height: 180,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: const Color(0xFF1E1E2E),
-            ),
-            child: Stack(
-              children: [
-                // Gambar poster dari URL
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    movie['posterUrl'] ?? '',
-                    height: 180,
-                    width: 130,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 180,
-                      width: 130,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(movie['posterColor'] as int),
-                            Color(movie['accentColor'] as int).withValues(alpha: 0.6),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.movie_outlined,
-                          color: Colors.white.withValues(alpha: 0.3),
-                          size: 40,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Rating di pojok kanan atas
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.star, color: Color(0xFFFFD700), size: 10),
-                        const SizedBox(width: 2),
-                        Text(
-                          movie['rating'].toString(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              movie['posterUrl'] ?? '',
+              height: 180,
+              width: 130,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 180,
+                  width: 130,
+                  color: Color(movie['posterColor']),
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
+
+          // Rating film
+          Row(
+            children: [
+              const Icon(Icons.star, color: Color(0xFFFFD700), size: 12),
+              const SizedBox(width: 4),
+              Text(
+                movie['rating'].toString(),
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 11),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+
           // Judul film
           Text(
             movie['title'],
@@ -99,6 +59,8 @@ class MovieCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
+
+          // Tahun dan genre
           Text(
             '${movie['year']} • ${movie['genre']}',
             style: GoogleFonts.poppins(color: Colors.white54, fontSize: 11),
