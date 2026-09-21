@@ -3,8 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'downloads_screen.dart';
 import 'favourites_screen.dart';
 
-// Halaman detail film.
-// Menerima data film dari halaman sebelumnya lewat constructor.
+
 class MovieDetailScreen extends StatelessWidget {
   final Map<String, dynamic> movie;
 
@@ -26,7 +25,7 @@ class MovieDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Poster film dengan tombol play di tengah
+
             Stack(
               alignment: Alignment.center,
               children: [
@@ -65,7 +64,7 @@ class MovieDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul film
+
                   Text(
                     movie['title'],
                     style: GoogleFonts.poppins(
@@ -77,7 +76,7 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // Info: rating, tahun, durasi, genre
+
                   Wrap(
                     spacing: 16,
                     children: [
@@ -106,7 +105,7 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Tombol Tonton
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -136,7 +135,7 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Tombol Favorit dan Unduh
+
                   Row(
                     children: [
                       Expanded(
@@ -189,7 +188,7 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Sinopsis
+
                   Text(
                     'Sinopsis',
                     style: GoogleFonts.poppins(
@@ -210,7 +209,7 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Pemeran
+
                   Text(
                     'Pemeran',
                     style: GoogleFonts.poppins(
@@ -233,7 +232,7 @@ class MovieDetailScreen extends StatelessWidget {
   }
 }
 
-// Badge kecil untuk menampilkan info (rating, tahun, durasi, genre)
+
 class _InfoBadge extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -261,7 +260,7 @@ class _InfoBadge extends StatelessWidget {
   }
 }
 
-// Widget untuk menampilkan avatar pemeran dari string yang dipisah koma
+
 class _CastRow extends StatelessWidget {
   final String castString;
 
