@@ -1,16 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../data/tmdb_service.dart';
 import 'downloads_screen.dart';
 import 'favourites_screen.dart';
 
-
-class MovieDetailScreen extends StatelessWidget {
+class MovieDetailScreen extends StatefulWidget {
   final Map<String, dynamic> movie;
 
   const MovieDetailScreen({super.key, required this.movie});
 
   @override
+  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
+
+class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  String _duration = '-';
+  String _cast = '';
+  bool _loadingDetail = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch detail hanya kalau durasi belum ada (artinya data dari TMDB, bukan dummy)
+    if (widget.movie['duration'] == '-' || widget.movie['cast'] == '') {
+      _fetchDetail();
+    } else {
+      _duration = widget.movie['duration'];
+      _cast = widget.movie['cast'];
+    }
+  }
+
+  Future<void> _fetchDetail() async {
+    setState(() => _loadingDetail = true);
+    try {
+      final detail = await TmdbService.getMovieDetails(widget.movie['id'] as int);
+      setState(() {
+        _duration = detail['duration'] as String;
+        _cast = detail['cast'] as String;
+        _loadingDetail = false;
+      });
+    } catch (_) {
+      setState(() => _loadingDetail = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final movie = widget.movie;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0F),
       appBar: AppBar(
@@ -76,7 +113,6 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-
                   Wrap(
                     spacing: 16,
                     children: [
@@ -92,7 +128,8 @@ class MovieDetailScreen extends StatelessWidget {
                       ),
                       _InfoBadge(
                         icon: Icons.access_time_outlined,
-                        text: movie['duration'],
+                        // Tampilkan loading kecil kalau masih fetch
+                        text: _loadingDetail ? '...' : _duration,
                         color: Colors.white54,
                       ),
                       _InfoBadge(
@@ -104,7 +141,6 @@ class MovieDetailScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 20),
-
 
                   SizedBox(
                     width: double.infinity,
@@ -134,7 +170,6 @@ class MovieDetailScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
 
                   Row(
                     children: [
@@ -188,7 +223,6 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-
                   Text(
                     'Sinopsis',
                     style: GoogleFonts.poppins(
@@ -209,7 +243,6 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-
                   Text(
                     'Pemeran',
                     style: GoogleFonts.poppins(
@@ -219,7 +252,19 @@ class MovieDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _CastRow(castString: movie['cast']),
+
+                  // Tampilkan shimmer/loading kalau cast belum ada
+                  _loadingDetail
+                      ? const SizedBox(
+                          height: 80,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFD8F602),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        )
+                      : _CastRow(castString: _cast),
 
                   const SizedBox(height: 30),
                 ],
@@ -268,6 +313,13 @@ class _CastRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (castString.isEmpty) {
+      return Text(
+        'Pemeran tidak tersedia',
+        style: GoogleFonts.poppins(color: Colors.white38, fontSize: 13),
+      );
+    }
+
     final castList = castString.split(', ');
 
     return SingleChildScrollView(

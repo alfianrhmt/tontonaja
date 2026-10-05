@@ -55,7 +55,7 @@ class MovieCard extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
