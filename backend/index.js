@@ -44,6 +44,23 @@ app.get('/api/movies', (req, res) => {
   res.json({ success: true, data: movies });
 });
 
+// GET /api/movies/search?q=keyword — cari film berdasarkan judul
+// ⚠️ Harus SEBELUM /:id agar tidak tertangkap sebagai ID
+app.get('/api/movies/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json({ success: true, data: [] });
+
+  const movies = db.prepare(`
+    SELECT m.*, g.name AS genre_name
+    FROM movies m
+    JOIN genres g ON m.genre_id = g.id
+    WHERE m.title LIKE ?
+    ORDER BY m.rating DESC
+  `).all(`%${q}%`);
+
+  res.json({ success: true, data: movies });
+});
+
 // GET /api/movies/:id — detail satu film
 app.get('/api/movies/:id', (req, res) => {
   const movie = db.prepare(`
@@ -58,22 +75,6 @@ app.get('/api/movies/:id', (req, res) => {
   }
 
   res.json({ success: true, data: movie });
-});
-
-// GET /api/movies/search?q=keyword — cari film berdasarkan judul
-app.get('/api/movies/search', (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.json({ success: true, data: [] });
-
-  const movies = db.prepare(`
-    SELECT m.*, g.name AS genre_name
-    FROM movies m
-    JOIN genres g ON m.genre_id = g.id
-    WHERE m.title LIKE ?
-    ORDER BY m.rating DESC
-  `).all(`%${q}%`);
-
-  res.json({ success: true, data: movies });
 });
 
 // ─────────────────────────────────────────────────────────────
