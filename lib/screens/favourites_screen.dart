@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/movies.dart';
+import '../data/api_service.dart';
 
 // Halaman daftar film favorit
-class FavouritesScreen extends StatelessWidget {
+class FavouritesScreen extends StatefulWidget {
   const FavouritesScreen({super.key});
+
+  @override
+  State<FavouritesScreen> createState() => _FavouritesScreenState();
+}
+
+class _FavouritesScreenState extends State<FavouritesScreen> {
+  late Future<List<Map<String, dynamic>>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = fetchFavourites().then((list) => list.map(normalizeMovie).toList());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,29 +34,24 @@ class FavouritesScreen extends StatelessWidget {
             fontSize: 22,
           ),
         ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                favouriteMovies.length.toString() + ' Film',
-                style: GoogleFonts.poppins(
-                  color: Colors.white38,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
-      body: favouriteMovies.isEmpty
-          ? buildEmptyView()
-          : buildListView(),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFFD8F602)),
+            );
+          }
+          final list = snap.data ?? [];
+          return list.isEmpty ? buildEmptyView() : buildListView(list);
+        },
+      ),
     );
   }
 
   // list film favorit, pakai for loop biasa aja
-  Widget buildListView() {
+  Widget buildListView(List<Map<String, dynamic>> favouriteMovies) {
     List<Widget> items = [];
 
     for (var i = 0; i < favouriteMovies.length; i++) {

@@ -160,7 +160,25 @@ const movies = [
   },
 ];
 
-const seed = db.transaction(() => movies.forEach(m => insertMovie.run(m)));
+const seed = db.transaction(() => {
+  movies.forEach(m => insertMovie.run(m));
+
+  // seed user demo
+  db.prepare(`
+    INSERT OR IGNORE INTO users (id, name, email, password)
+    VALUES (1, 'User Demo', 'user@tontonaja.com', 'password123')
+  `).run();
+
+  // seed data awal favorit & unduhan
+  const insertFav = db.prepare('INSERT OR IGNORE INTO favourites (user_id, movie_id) VALUES (?, ?)');
+  [1, 3, 6, 11].forEach(id => insertFav.run(1, id));
+
+  const insertDl = db.prepare('INSERT OR IGNORE INTO downloads (user_id, movie_id, quality, file_size) VALUES (?, ?, ?, ?)');
+  insertDl.run(1, 2, 'HD', '1.4 GB');
+  insertDl.run(1, 8, 'Full HD', '2.1 GB');
+  insertDl.run(1, 12, 'HD', '1.1 GB');
+});
+
 seed();
 
 db.close();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../data/movies.dart';
+import '../data/api_service.dart';
 import '../data/tmdb_service.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/section_header.dart';
@@ -9,7 +9,7 @@ import 'search_screen.dart';
 import 'movie_detail_screen.dart';
 import 'movie_list_screen.dart';
 
-// Halaman utama aplikasi — sekarang load data dari TMDB API
+// Halaman utama aplikasi — load data dari TMDB API dengan fallback ke backend lokal
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _popularMovies = [];
   List<Map<String, dynamic>> _trendingMovies = [];
+  List<String> _genres = ['Semua', 'Action', 'Sci-Fi', 'Drama', 'Comedy', 'Horror'];
   bool _isLoading = true;
   String? _error;
 
@@ -27,9 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadMovies();
+    fetchGenres().then((g) {
+      if (mounted) setState(() => _genres = g);
+    }).catchError((_) {});
   }
 
-  // Ambil data dari TMDB, kalau gagal fallback ke data dummy
+  // Ambil data dari TMDB, kalau gagal fallback ke backend lokal
   Future<void> _loadMovies() async {
     try {
       final results = await Future.wait([
@@ -43,13 +47,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      // Fallback ke data dummy kalau API gagal (misal: belum ada internet / API key belum diisi)
-      setState(() {
-        _popularMovies = List<Map<String, dynamic>>.from(movies.sublist(1, 7));
-        _trendingMovies = List<Map<String, dynamic>>.from(movies.sublist(7, 14));
-        _isLoading = false;
-        _error = 'Gagal load dari TMDB, tampil data lokal.\n($e)';
-      });
+      // Fallback ke database backend lokal
+      try {
+        final local = await fetchMovies();
+        final normalized = local.map(normalizeMovie).toList();
+        setState(() {
+          _popularMovies = normalized.take(7).toList();
+          _trendingMovies = normalized.skip(7).take(7).toList();
+          _isLoading = false;
+          _error = 'TMDB offline, menggunakan data dari backend lokal.';
+        });
+      } catch (_) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Gagal memuat film dari TMDB maupun backend lokal.\n($e)';
+        });
+      }
     }
   }
 
@@ -71,10 +84,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Film unggulan: ambil dari trending (TMDB) atau fallback ke movies[0]
+    // Film unggulan: ambil dari trending (TMDB) atau list popular
     final featuredMovie = _trendingMovies.isNotEmpty
         ? _trendingMovies.first
-        : movies[0];
+        : (_popularMovies.isNotEmpty ? _popularMovies.first : null);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0F),
@@ -141,10 +154,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                     // FILM UNGGULAN (dari trending TMDB)
-                    GestureDetector(
-                      onTap: () => _bukaDetail(context, featuredMovie),
-                      child: Container(
-                        height: 440,
+                    if (featuredMovie != null)
+                      GestureDetector(
+                        onTap: () => _bukaDetail(context, featuredMovie),
+                        child: Container(
+                          height: 440,
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
@@ -275,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: genres.map((genre) {
+                        children: _genres.map((genre) {
                           return GestureDetector(
                             onTap: () => _bukaDaftar(context, genre),
                             child: Container(

@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/movies.dart';
+import '../data/api_service.dart';
 
 
-class MovieListScreen extends StatelessWidget {
+class MovieListScreen extends StatefulWidget {
   final String category;
 
   const MovieListScreen({super.key, required this.category});
 
   @override
+  State<MovieListScreen> createState() => _MovieListScreenState();
+}
+
+class _MovieListScreenState extends State<MovieListScreen> {
+  late Future<List<Map<String, dynamic>>> _moviesFuture;
+  late Future<List<String>> _genresFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _moviesFuture = fetchMovies(genre: widget.category).then(
+      (list) => list.map(normalizeMovie).toList(),
+    );
+    _genresFuture = fetchGenres();
+  }
+
+  @override
   Widget build(BuildContext context) {
-
-    final filteredMovies = category == 'Semua'
-        ? movies
-        : movies.where((m) => m['genre'] == category).toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0F),
       appBar: AppBar(
@@ -24,89 +36,94 @@ class MovieListScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          category == 'Semua' ? 'Semua Film' : 'Genre: $category',
+          widget.category == 'Semua' ? 'Semua Film' : 'Genre: ${widget.category}',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w700,
             fontSize: 18,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                '${filteredMovies.length} Film',
-                style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
-              ),
-            ),
-          ),
-        ],
       ),
-      body: Column(
-        children: [
+      body: FutureBuilder<List<dynamic>>(
+        future: Future.wait([_moviesFuture, _genresFuture]),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFFD8F602)),
+            );
+          }
+          if (snap.hasError) {
+            return Center(
+              child: Text('Gagal memuat data',
+                  style: GoogleFonts.poppins(color: Colors.white54)),
+            );
+          }
 
-          SizedBox(
-            height: 48,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              children: genres.map((genre) {
-                final isSelected = genre == category;
-                return GestureDetector(
-                  onTap: () {
-                    if (!isSelected) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MovieListScreen(category: genre),
+          final films = snap.data![0] as List<Map<String, dynamic>>;
+          final genreList = snap.data![1] as List<String>;
+
+          return Column(
+            children: [
+              SizedBox(
+                height: 48,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  children: genreList.map((genre) {
+                    final isSelected = genre == widget.category;
+                    return GestureDetector(
+                      onTap: () {
+                        if (!isSelected) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MovieListScreen(category: genre),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFD8F602) : const Color(0xFF1E1E2E),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFD8F602) : const Color(0xFF1E1E2E),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      genre,
-                      style: GoogleFonts.poppins(
-                        color: isSelected ? Colors.black : Colors.white54,
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                        child: Text(
+                          genre,
+                          style: GoogleFonts.poppins(
+                            color: isSelected ? Colors.black : Colors.white54,
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-
-          Expanded(
-            child: filteredMovies.isEmpty
-                ? _EmptyState(category: category)
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.62,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemCount: filteredMovies.length,
-                    itemBuilder: (context, index) {
-                      return _MovieGridCard(movie: filteredMovies[index]);
-                    },
-                  ),
-          ),
-        ],
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: films.isEmpty
+                    ? _EmptyState(category: widget.category)
+                    : GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.62,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemCount: films.length,
+                        itemBuilder: (context, index) {
+                          return _MovieGridCard(movie: films[index]);
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

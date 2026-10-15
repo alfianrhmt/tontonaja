@@ -1,46 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/movies.dart';
+import '../data/api_service.dart';
 
 // Halaman untuk nampilin film yang udah didownload
-// Catatan: ini masih dummy ya, belum ada proses download beneran
-class DownloadsScreen extends StatelessWidget {
+class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // ambil jumlah film yang udah didownload
-    int jumlahFilm = downloadedMovies.length;
+  State<DownloadsScreen> createState() => _DownloadsScreenState();
+}
 
-    return Scaffold(
-      backgroundColor: Color(0xFF0A0A0F),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF0A0A0F),
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Unduhan',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 22,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                jumlahFilm.toString() + ' Film',
-                style: GoogleFonts.poppins(
-                  color: Colors.white38,
-                  fontSize: 13,
-                ),
+class _DownloadsScreenState extends State<DownloadsScreen> {
+  late Future<List<Map<String, dynamic>>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = fetchDownloads().then((list) => list.map(normalizeMovie).toList());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF0A0A0F),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFFD8F602)),
+            ),
+          );
+        }
+
+        final list = snap.data ?? [];
+        int jumlahFilm = list.length;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0A0A0F),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF0A0A0F),
+            automaticallyImplyLeading: false,
+            title: Text(
+              'Unduhan',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 22,
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Center(
+                  child: Text(
+                    '$jumlahFilm Film',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white38,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: jumlahFilm == 0 ? tampilanKosong() : tampilanListFilm(),
+          body: jumlahFilm == 0 ? tampilanKosong() : tampilanListFilm(list),
+        );
+      },
     );
   }
 
@@ -79,7 +105,7 @@ class DownloadsScreen extends StatelessWidget {
   }
 
   // kalau udah ada film yang didownload, tampilin list-nya
-  Widget tampilanListFilm() {
+  Widget tampilanListFilm(List<Map<String, dynamic>> downloadedMovies) {
     return Column(
       children: [
         infoPenyimpanan(),
