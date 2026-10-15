@@ -1,0 +1,20 @@
+{
+  "name": "tontonaja-api",
+  "version": "1.0.0",
+  "description": "Backend API untuk aplikasi TontonAja - Node.js + Express + SQLite",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "node database/migrate.js",
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  }
+}

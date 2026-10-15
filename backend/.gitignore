@@ -1,0 +1,3 @@
+# Backend — file yang tidak perlu di-commit
+node_modules/
+tontonaja.db
