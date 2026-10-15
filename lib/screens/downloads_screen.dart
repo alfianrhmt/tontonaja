@@ -11,62 +11,64 @@ class DownloadsScreen extends StatefulWidget {
 }
 
 class _DownloadsScreenState extends State<DownloadsScreen> {
-  late Future<List<Map<String, dynamic>>> _future;
+  List<Map<String, dynamic>> _downloadedMovies = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _future = fetchDownloads().then((list) => list.map(normalizeMovie).toList());
+    _loadData();
+  }
+
+  void _loadData() async {
+    try {
+      final list = await fetchDownloads();
+      setState(() {
+        _downloadedMovies = list.map(normalizeMovie).toList();
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            backgroundColor: Color(0xFF0A0A0F),
-            body: Center(
-              child: CircularProgressIndicator(color: Color(0xFFD8F602)),
-            ),
-          );
-        }
+    int jumlahFilm = _downloadedMovies.length;
 
-        final list = snap.data ?? [];
-        int jumlahFilm = list.length;
-
-        return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0F),
-          appBar: AppBar(
-            backgroundColor: const Color(0xFF0A0A0F),
-            automaticallyImplyLeading: false,
-            title: Text(
-              'Unduhan',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Center(
-                  child: Text(
-                    '$jumlahFilm Film',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white38,
-                      fontSize: 13,
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0F),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0A0A0F),
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Unduhan',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                '$jumlahFilm Film',
+                style: GoogleFonts.poppins(
+                  color: Colors.white38,
+                  fontSize: 13,
                 ),
               ),
-            ],
+            ),
           ),
-          body: jumlahFilm == 0 ? tampilanKosong() : tampilanListFilm(list),
-        );
-      },
+        ],
+      ),
+      body: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFD8F602)),
+            )
+          : (jumlahFilm == 0 ? tampilanKosong() : tampilanListFilm(_downloadedMovies)),
     );
   }
 

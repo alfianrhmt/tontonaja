@@ -13,16 +13,28 @@ class MovieListScreen extends StatefulWidget {
 }
 
 class _MovieListScreenState extends State<MovieListScreen> {
-  late Future<List<Map<String, dynamic>>> _moviesFuture;
-  late Future<List<String>> _genresFuture;
+  List<Map<String, dynamic>> _films = [];
+  List<String> _genreList = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _moviesFuture = fetchMovies(genre: widget.category).then(
-      (list) => list.map(normalizeMovie).toList(),
-    );
-    _genresFuture = fetchGenres();
+    _loadData();
+  }
+
+  void _loadData() async {
+    try {
+      final movies = await fetchMovies(genre: widget.category);
+      final genres = await fetchGenres();
+      setState(() {
+        _films = movies.map(normalizeMovie).toList();
+        _genreList = genres;
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -44,87 +56,71 @@ class _MovieListScreenState extends State<MovieListScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: Future.wait([_moviesFuture, _genresFuture]),
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(
+      body: _loading
+          ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFD8F602)),
-            );
-          }
-          if (snap.hasError) {
-            return Center(
-              child: Text('Gagal memuat data',
-                  style: GoogleFonts.poppins(color: Colors.white54)),
-            );
-          }
-
-          final films = snap.data![0] as List<Map<String, dynamic>>;
-          final genreList = snap.data![1] as List<String>;
-
-          return Column(
-            children: [
-              SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  children: genreList.map((genre) {
-                    final isSelected = genre == widget.category;
-                    return GestureDetector(
-                      onTap: () {
-                        if (!isSelected) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MovieListScreen(category: genre),
+            )
+          : Column(
+              children: [
+                SizedBox(
+                  height: 48,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    children: _genreList.map((genre) {
+                      final isSelected = genre == widget.category;
+                      return GestureDetector(
+                        onTap: () {
+                          if (!isSelected) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MovieListScreen(category: genre),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFFD8F602) : const Color(0xFF1E1E2E),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            genre,
+                            style: GoogleFonts.poppins(
+                              color: isSelected ? Colors.black : Colors.white54,
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                             ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFD8F602) : const Color(0xFF1E1E2E),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          genre,
-                          style: GoogleFonts.poppins(
-                            color: isSelected ? Colors.black : Colors.white54,
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: films.isEmpty
-                    ? _EmptyState(category: widget.category)
-                    : GridView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.62,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+                const SizedBox(height: 8),
+                Expanded(
+                  child: _films.isEmpty
+                      ? _EmptyState(category: widget.category)
+                      : GridView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.62,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                          itemCount: _films.length,
+                          itemBuilder: (context, index) {
+                            return _MovieGridCard(movie: _films[index]);
+                          },
                         ),
-                        itemCount: films.length,
-                        itemBuilder: (context, index) {
-                          return _MovieGridCard(movie: films[index]);
-                        },
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
+                ),
+              ],
+            ),
     );
   }
 }

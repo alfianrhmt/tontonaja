@@ -11,20 +11,33 @@ class FavouritesScreen extends StatefulWidget {
 }
 
 class _FavouritesScreenState extends State<FavouritesScreen> {
-  late Future<List<Map<String, dynamic>>> _future;
+  List<Map<String, dynamic>> _favourites = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _future = fetchFavourites().then((list) => list.map(normalizeMovie).toList());
+    _loadData();
+  }
+
+  void _loadData() async {
+    try {
+      final list = await fetchFavourites();
+      setState(() {
+        _favourites = list.map(normalizeMovie).toList();
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A0A0F),
+      backgroundColor: const Color(0xFF0A0A0F),
       appBar: AppBar(
-        backgroundColor: Color(0xFF0A0A0F),
+        backgroundColor: const Color(0xFF0A0A0F),
         automaticallyImplyLeading: false,
         title: Text(
           'Film Favorit',
@@ -35,18 +48,11 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(
+      body: _loading
+          ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFD8F602)),
-            );
-          }
-          final list = snap.data ?? [];
-          return list.isEmpty ? buildEmptyView() : buildListView(list);
-        },
-      ),
+            )
+          : (_favourites.isEmpty ? buildEmptyView() : buildListView(_favourites)),
     );
   }
 
