@@ -23,11 +23,13 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
   void _loadData() async {
     try {
       final list = await fetchFavourites();
+      if (!mounted) return;
       setState(() {
         _favourites = list.map(normalizeMovie).toList();
         _loading = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }

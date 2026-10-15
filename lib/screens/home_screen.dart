@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
         TmdbService.getTrendingMovies(),
       ]);
 
+      if (!mounted) return;
       setState(() {
         _popularMovies = results[0];
         _trendingMovies = results[1];
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       try {
         final local = await fetchMovies();
         final normalized = local.map(normalizeMovie).toList();
+        if (!mounted) return;
         setState(() {
           _popularMovies = normalized.take(7).toList();
           _trendingMovies = normalized.skip(7).take(7).toList();
@@ -58,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _error = 'TMDB offline, menggunakan data dari backend lokal.';
         });
       } catch (_) {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
           _error = 'Gagal memuat film dari TMDB maupun backend lokal.\n($e)';

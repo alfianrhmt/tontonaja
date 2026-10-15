@@ -27,12 +27,14 @@ class _MovieListScreenState extends State<MovieListScreen> {
     try {
       final movies = await fetchMovies(genre: widget.category);
       final genres = await fetchGenres();
+      if (!mounted) return;
       setState(() {
         _films = movies.map(normalizeMovie).toList();
         _genreList = genres;
         _loading = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }

@@ -23,11 +23,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   void _loadData() async {
     try {
       final list = await fetchDownloads();
+      if (!mounted) return;
       setState(() {
         _downloadedMovies = list.map(normalizeMovie).toList();
         _loading = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }

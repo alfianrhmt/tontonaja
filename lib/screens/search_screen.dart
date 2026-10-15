@@ -24,11 +24,13 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadInitialMovies() async {
     try {
       final list = await fetchMovies();
+      if (!mounted) return;
       setState(() {
         _movies = list.map(normalizeMovie).toList();
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -42,11 +44,13 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() => _isLoading = true);
     try {
       final list = await searchMovies(query);
+      if (!mounted) return;
       setState(() {
         _movies = list.map(normalizeMovie).toList();
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }

@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-// ganti ini kalau port-nya beda
-const _base = 'http://10.0.2.2:3000/api'; // emulator Android
-// const _base = 'http://localhost:3000/api'; // web / iOS simulator
+// otomatis pilih host: localhost untuk web/desktop, 10.0.2.2 untuk emulator android
+final String _base = kIsWeb
+    ? 'http://localhost:3000/api'
+    : (defaultTargetPlatform == TargetPlatform.android
+        ? 'http://10.0.2.2:3000/api'
+        : 'http://localhost:3000/api');
 
 Future<List<Map<String, dynamic>>> fetchMovies({String? genre}) async {
   final url = genre != null && genre != 'Semua'
