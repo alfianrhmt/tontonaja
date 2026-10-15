@@ -1,61 +1,80 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-// otomatis pilih host: localhost untuk web/desktop, 10.0.2.2 untuk emulator android
-final String _base = kIsWeb
-    ? 'http://localhost:3000/api'
-    : (defaultTargetPlatform == TargetPlatform.android
-        ? 'http://10.0.2.2:3000/api'
-        : 'http://localhost:3000/api');
+const baseUrl = 'http://localhost:3000/api';
 
 Future<List<Map<String, dynamic>>> fetchMovies({String? genre}) async {
-  final url = genre != null && genre != 'Semua'
-      ? Uri.parse('$_base/movies?genre=$genre')
-      : Uri.parse('$_base/movies');
+  try {
+    var url = '$baseUrl/movies';
+    if (genre != null && genre != 'Semua') {
+      url += '?genre=$genre';
+    }
 
-  final res = await http.get(url);
-  if (res.statusCode != 200) throw Exception('gagal ambil film');
-
-  final body = jsonDecode(res.body) as Map<String, dynamic>;
-  return List<Map<String, dynamic>>.from(body['data']);
+    final res = await http.get(Uri.parse(url));
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return List<Map<String, dynamic>>.from(body['data']);
+    }
+  } catch (e) {
+    // error diabaikan
+  }
+  return [];
 }
 
 Future<List<Map<String, dynamic>>> searchMovies(String query) async {
-  final url = Uri.parse('$_base/movies/search?q=${Uri.encodeComponent(query)}');
-  final res = await http.get(url);
-  if (res.statusCode != 200) throw Exception('gagal cari film');
-
-  final body = jsonDecode(res.body) as Map<String, dynamic>;
-  return List<Map<String, dynamic>>.from(body['data']);
+  try {
+    final res = await http.get(Uri.parse('$baseUrl/movies/search?q=$query'));
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return List<Map<String, dynamic>>.from(body['data']);
+    }
+  } catch (e) {
+    // error diabaikan
+  }
+  return [];
 }
 
 Future<List<Map<String, dynamic>>> fetchFavourites() async {
-  final res = await http.get(Uri.parse('$_base/favourites'));
-  if (res.statusCode != 200) throw Exception('gagal ambil favorit');
-
-  final body = jsonDecode(res.body) as Map<String, dynamic>;
-  return List<Map<String, dynamic>>.from(body['data']);
+  try {
+    final res = await http.get(Uri.parse('$baseUrl/favourites'));
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return List<Map<String, dynamic>>.from(body['data']);
+    }
+  } catch (e) {
+    // error diabaikan
+  }
+  return [];
 }
 
 Future<List<Map<String, dynamic>>> fetchDownloads() async {
-  final res = await http.get(Uri.parse('$_base/downloads'));
-  if (res.statusCode != 200) throw Exception('gagal ambil unduhan');
-
-  final body = jsonDecode(res.body) as Map<String, dynamic>;
-  return List<Map<String, dynamic>>.from(body['data']);
+  try {
+    final res = await http.get(Uri.parse('$baseUrl/downloads'));
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return List<Map<String, dynamic>>.from(body['data']);
+    }
+  } catch (e) {
+    // error diabaikan
+  }
+  return [];
 }
 
 Future<List<String>> fetchGenres() async {
-  final res = await http.get(Uri.parse('$_base/genres'));
-  if (res.statusCode != 200) throw Exception('gagal ambil genre');
-
-  final body = jsonDecode(res.body) as Map<String, dynamic>;
-  final list = List<Map<String, dynamic>>.from(body['data']);
-  return ['Semua', ...list.map((g) => g['name'] as String)];
+  try {
+    final res = await http.get(Uri.parse('$baseUrl/genres'));
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      final list = List<Map<String, dynamic>>.from(body['data']);
+      return ['Semua', ...list.map((g) => g['name'].toString())];
+    }
+  } catch (e) {
+    // error diabaikan
+  }
+  return ['Semua'];
 }
 
-// normalisasi key supaya kompatibel dengan screen yang sudah ada
+// samakan nama field database ke widget
 Map<String, dynamic> normalizeMovie(Map<String, dynamic> m) {
   return {
     ...m,
