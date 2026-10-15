@@ -1,6 +1,6 @@
 # Tugas API - TontonAja
 
-Aplikasi streaming dan katalog film sederhana pakai Flutter, backend-nya pakai Express.js dan SQLite.
+Aplikasi streaming dan katalog film sederhana menggunakan Flutter, backend-nya menggunakan Express.js dan SQLite.
 
 ## Cara Menjalankan
 
